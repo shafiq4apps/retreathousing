@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Properties - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 text-primary">
+        <i class="bi bi-building me-2"></i>Properties
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.add_property') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Add Property
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if properties %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Type</th>
+                        <th>Bed/Bath</th>
+                        <th>Sq. Ft.</th>
+                        <th>Rent</th>
+                        <th>Current Tenant</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for property in properties %}
+                    <tr>
+                        <td>
+                            <strong>{{ property.address }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark">{{ property.property_type.title() }}</span>
+                        </td>
+                        <td>
+                            {% if property.bedrooms and property.bathrooms %}
+                                {{ property.bedrooms }}BR / {{ property.bathrooms }}BA
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if property.square_footage %}
+                                {{ property.square_footage | int }} sq ft
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if property.rent_amount %}
+                                ${{ "%.2f"|format(property.rent_amount) }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if property.current_tenant %}
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-check text-success me-1"></i>
+                                    {{ property.current_tenant.full_name }}
+                                </div>
+                            {% else %}
+                                <div class="text-muted">
+                                    <i class="bi bi-person-x me-1"></i>
+                                    Vacant
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if property.is_active %}
+                                <span class="badge badge-active">Active</span>
+                            {% else %}
+                                <span class="badge badge-inactive">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-outline-info" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-building" style="font-size: 4rem; color: var(--medium-gray);"></i>
+            <h4 class="mt-3 text-muted">No Properties Yet</h4>
+            <p class="text-muted">Add your first property to get started with tenant management.</p>
+            <a href="{{ url_for('admin.add_property') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Add First Property
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

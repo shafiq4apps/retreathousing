@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Retreat Housing{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <!-- Logo and Brand -->
+                        <div class="text-center mb-4">
+                            <img src="{{ url_for('static', filename='images/logo.webp') }}" alt="Retreat Housing" style="height: 60px;" class="mb-3">
+                            <h2 class="heading text-primary">Property Portal</h2>
+                            <p class="text-muted">Sign in to your account</p>
+                        </div>
+
+                        <!-- Login Form -->
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                                {% if form.username.errors %}
+                                    {% for error in form.username.errors %}
+                                        <div class="text-danger small mt-1">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control") }}
+                                {% if form.password.errors %}
+                                    {% for error in form.password.errors %}
+                                        <div class="text-danger small mt-1">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Additional Info -->
+                        <div class="mt-4 text-center">
+                            <p class="small text-muted">
+                                Need help accessing your account?<br>
+                                Contact your property administrator.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demo Credentials -->
+                <div class="card mt-3 bg-accent-1" style="background-color: var(--accent-color-1);">
+                    <div class="card-body">
+                        <h6 class="card-title text-primary"><i class="bi bi-info-circle me-2"></i>Demo Credentials</h6>
+                        <p class="card-text small mb-1"><strong>Admin:</strong> admin / password</p>
+                        <p class="card-text small mb-0"><strong>Tenant:</strong> tenant1 / password</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, var(--light-gray) 0%, var(--medium-gray) 100%);
+    }
+</style>
+{% endblock %}
