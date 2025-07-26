@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Send Message - Retreat Housing{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap justify-between items-center pt-6 pb-4 mb-6 border-b border-gray-200">
+    <h1 class="text-3xl font-semibold text-primary-800 heading">Send Message</h1>
+    <div class="flex space-x-2">
+        <a href="{{ url_for('admin.messages') }}" class="px-4 py-2 text-sm text-primary-800 border border-primary-800 rounded-md hover:bg-primary-50 transition-colors">
+            <i class="bi bi-arrow-left mr-2"></i>Back to Messages
+        </a>
+    </div>
+</div>
+
+<div class="max-w-2xl">
+    <div class="card-brand p-6">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="space-y-6">
+                <!-- Recipient Selection -->
+                <div>
+                    {{ form.recipient_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.recipient_id(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent") }}
+                    {% if form.recipient_id.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.recipient_id.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="mt-1 text-sm text-gray-500">Select the tenant to send a message to</div>
+                </div>
+                
+                <!-- Property Selection (Optional) -->
+                <div>
+                    {{ form.property_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.property_id(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent") }}
+                    {% if form.property_id.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.property_id.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="mt-1 text-sm text-gray-500">Optionally link this message to a specific property</div>
+                </div>
+                
+                <!-- Message Content -->
+                <div>
+                    {{ form.message_text.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.message_text(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent", rows="6", placeholder="Type your message here...") }}
+                    {% if form.message_text.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.message_text.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="mt-1 text-sm text-gray-500">
+                        <span id="char-count">0</span>/1000 characters
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+                <a href="{{ url_for('admin.messages') }}" class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="btn-brand-primary" id="send-btn">
+                    <i class="bi bi-send mr-2"></i>Send Message
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Message Templates -->
+<div class="card-brand p-6 mt-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Templates</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-2">
+            <button type="button" onclick="useTemplate('rent-reminder')" class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                <div class="font-medium text-blue-900">Rent Reminder</div>
+                <div class="text-sm text-blue-700">Monthly rent payment reminder</div>
+            </button>
+            
+            <button type="button" onclick="useTemplate('maintenance-update')" class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                <div class="font-medium text-green-900">Maintenance Update</div>
+                <div class="text-sm text-green-700">Update on maintenance request status</div>
+            </button>
+            
+            <button type="button" onclick="useTemplate('lease-reminder')" class="w-full text-left p-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
+                <div class="font-medium text-yellow-900">Lease Renewal</div>
+                <div class="text-sm text-yellow-700">Lease renewal notice</div>
+            </button>
+        </div>
+        
+        <div class="space-y-2">
+            <button type="button" onclick="useTemplate('welcome')" class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                <div class="font-medium text-purple-900">Welcome Message</div>
+                <div class="text-sm text-purple-700">Welcome new tenant</div>
+            </button>
+            
+            <button type="button" onclick="useTemplate('inspection')" class="w-full text-left p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors">
+                <div class="font-medium text-indigo-900">Inspection Notice</div>
+                <div class="text-sm text-indigo-700">Property inspection notification</div>
+            </button>
+            
+            <button type="button" onclick="useTemplate('general')" class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                <div class="font-medium text-gray-900">General Notice</div>
+                <div class="text-sm text-gray-700">General property notice</div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="card-brand p-6 mt-6 bg-blue-50 border border-blue-200">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="bi bi-info-circle text-blue-600 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Message Guidelines</h3>
+            <div class="mt-2 text-sm text-blue-700">
+                <p>Tips for effective communication:</p>
+                <ul class="list-disc list-inside mt-2 space-y-1">
+                    <li>Be clear and concise in your messages</li>
+                    <li>Include relevant property details when applicable</li>
+                    <li>Use professional and friendly tone</li>
+                    <li>Include specific dates or deadlines when necessary</li>
+                    <li>Use message templates for common communications</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Character counter
+document.getElementById('message_text').addEventListener('input', function() {
+    const charCount = this.value.length;
+    document.getElementById('char-count').textContent = charCount;
+    
+    if (charCount > 900) {
+        document.getElementById('char-count').className = 'text-red-600 font-medium';
+    } else if (charCount > 800) {
+        document.getElementById('char-count').className = 'text-yellow-600 font-medium';
+    } else {
+        document.getElementById('char-count').className = '';
+    }
+});
+
+// Message templates
+const templates = {
+    'rent-reminder': `Dear [Tenant Name],
+
+This is a friendly reminder that your monthly rent payment of $[Amount] is due on [Due Date].
+
+Please ensure payment is made on time to avoid any late fees. If you have any questions or concerns about your payment, please don't hesitate to contact me.
+
+Thank you for your cooperation.
+
+Best regards,
+Property Management`,
+
+    'maintenance-update': `Dear [Tenant Name],
+
+I wanted to update you on the status of your recent maintenance request submitted on [Date].
+
+[Update details - e.g., "Our maintenance team has scheduled the repair for [Date] between [Time]. Please ensure someone is available to provide access to the property."]
+
+If you have any questions or concerns, please feel free to contact me.
+
+Best regards,
+Property Management`,
+
+    'lease-reminder': `Dear [Tenant Name],
+
+I hope this message finds you well. I wanted to reach out regarding your lease agreement, which is set to expire on [Lease End Date].
+
+We would like to discuss lease renewal options with you. Please let me know your intentions regarding renewal so we can begin the necessary paperwork.
+
+If you have any questions about the renewal process or terms, please don't hesitate to contact me.
+
+Best regards,
+Property Management`,
+
+    'welcome': `Dear [Tenant Name],
+
+Welcome to your new home at [Property Address]! We're thrilled to have you as our tenant.
+
+Here are some important details for your reference:
+- Move-in date: [Date]
+- Monthly rent: $[Amount]
+- Rent due date: [Day] of each month
+- Emergency contact: [Phone Number]
+
+If you have any questions or need assistance settling in, please don't hesitate to reach out.
+
+We look forward to a great landlord-tenant relationship!
+
+Best regards,
+Property Management`,
+
+    'inspection': `Dear [Tenant Name],
+
+This notice is to inform you that we will be conducting a routine property inspection at [Property Address] on [Date] at [Time].
+
+The inspection is part of our regular maintenance schedule and will take approximately [Duration]. We will be checking:
+- General property condition
+- Safety systems (smoke detectors, etc.)
+- Any maintenance needs
+
+Please ensure someone is available to provide access. If this time is not convenient, please contact me to reschedule.
+
+Thank you for your cooperation.
+
+Best regards,
+Property Management`,
+
+    'general': `Dear [Tenant Name],
+
+I hope this message finds you well. I wanted to inform you about [Subject/Topic].
+
+[Message content - please customize based on your specific notice or information]
+
+If you have any questions or concerns, please feel free to contact me.
+
+Best regards,
+Property Management`
+};
+
+function useTemplate(templateType) {
+    const messageTextarea = document.getElementById('message_text');
+    messageTextarea.value = templates[templateType];
+    
+    // Update character count
+    const event = new Event('input');
+    messageTextarea.dispatchEvent(event);
+    
+    // Scroll to message textarea
+    messageTextarea.scrollIntoView({ behavior: 'smooth' });
+    messageTextarea.focus();
+}
+
+// Form submission with loading state
+document.querySelector('form').addEventListener('submit', function() {
+    const sendBtn = document.getElementById('send-btn');
+    sendBtn.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i>Sending...';
+    sendBtn.disabled = true;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Lease - Retreat Housing{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap justify-between items-center pt-6 pb-4 mb-6 border-b border-gray-200">
+    <h1 class="text-3xl font-semibold text-primary-800 heading">Add New Lease</h1>
+    <div class="flex space-x-2">
+        <a href="{{ url_for('admin.leases') }}" class="px-4 py-2 text-sm text-primary-800 border border-primary-800 rounded-md hover:bg-primary-50 transition-colors">
+            <i class="bi bi-arrow-left mr-2"></i>Back to Leases
+        </a>
+    </div>
+</div>
+
+<div class="max-w-2xl">
+    <div class="card-brand p-6">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tenant Selection -->
+                <div>
+                    {{ form.tenant_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.tenant_id(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent") }}
+                    {% if form.tenant_id.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.tenant_id.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Property Selection -->
+                <div>
+                    {{ form.property_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.property_id(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent") }}
+                    {% if form.property_id.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.property_id.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Start Date -->
+                <div>
+                    {{ form.start_date.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.start_date(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent") }}
+                    {% if form.start_date.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.start_date.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- End Date -->
+                <div>
+                    {{ form.end_date.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.end_date(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent") }}
+                    {% if form.end_date.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.end_date.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Monthly Rent -->
+                <div>
+                    {{ form.monthly_rent.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">$</span>
+                        </div>
+                        {{ form.monthly_rent(class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent", placeholder="0.00") }}
+                    </div>
+                    {% if form.monthly_rent.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.monthly_rent.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Security Deposit -->
+                <div>
+                    {{ form.security_deposit.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">$</span>
+                        </div>
+                        {{ form.security_deposit(class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent", placeholder="0.00") }}
+                    </div>
+                    {% if form.security_deposit.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.security_deposit.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="mt-1 text-sm text-gray-500">Optional - Security deposit amount</div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+                <a href="{{ url_for('admin.leases') }}" class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="btn-brand-primary">
+                    <i class="bi bi-plus-circle mr-2"></i>Create Lease
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="card-brand p-6 mt-6 bg-blue-50 border border-blue-200">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="bi bi-info-circle text-blue-600 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Creating a New Lease</h3>
+            <div class="mt-2 text-sm text-blue-700">
+                <p>When creating a lease agreement:</p>
+                <ul class="list-disc list-inside mt-2 space-y-1">
+                    <li>Select an active tenant from the dropdown</li>
+                    <li>Choose one of your available properties</li>
+                    <li>Set the lease start and end dates</li>
+                    <li>Enter the monthly rent amount</li>
+                    <li>Optionally add a security deposit amount</li>
+                </ul>
+                <p class="mt-3">The lease will be automatically marked as active once created.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-populate monthly rent from property selection
+document.addEventListener('DOMContentLoaded', function() {
+    const propertySelect = document.getElementById('property_id');
+    const monthlyRentInput = document.getElementById('monthly_rent');
+    
+    if (propertySelect && monthlyRentInput) {
+        propertySelect.addEventListener('change', function() {
+            // This would require AJAX to fetch property rent amount
+            // For now, we'll leave it as manual input
+        });
+    }
+});
+</script>
+{% endblock %}

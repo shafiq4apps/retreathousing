@@ -3,109 +3,345 @@
 {% block title %}Properties - Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2 text-primary">
-        <i class="bi bi-building me-2"></i>Properties
+<!-- Clean Header Section -->
+<div class="flex flex-wrap justify-between items-center pt-6 pb-4 mb-6 border-b border-gray-200">
+    <h1 class="text-3xl font-semibold text-primary-800 heading flex items-center">
+        <i class="bi bi-buildings mr-3"></i>Properties
     </h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('admin.add_property') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-2"></i>Add Property
+    <div class="flex space-x-2">
+        <a href="{{ url_for('admin.add_property') }}" class="btn-brand-primary flex items-center">
+            <i class="bi bi-plus-circle mr-2"></i>Add Property
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        {% if properties %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Address</th>
-                        <th>Type</th>
-                        <th>Bed/Bath</th>
-                        <th>Sq. Ft.</th>
-                        <th>Rent</th>
-                        <th>Current Tenant</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for property in properties %}
-                    <tr>
-                        <td>
-                            <strong>{{ property.address }}</strong>
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark">{{ property.property_type.title() }}</span>
-                        </td>
-                        <td>
-                            {% if property.bedrooms and property.bathrooms %}
-                                {{ property.bedrooms }}BR / {{ property.bathrooms }}BA
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if property.square_footage %}
-                                {{ property.square_footage | int }} sq ft
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if property.rent_amount %}
-                                ${{ "%.2f"|format(property.rent_amount) }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if property.current_tenant %}
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-person-check text-success me-1"></i>
-                                    {{ property.current_tenant.full_name }}
-                                </div>
-                            {% else %}
-                                <div class="text-muted">
-                                    <i class="bi bi-person-x me-1"></i>
-                                    Vacant
-                                </div>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if property.is_active %}
-                                <span class="badge badge-active">Active</span>
-                            {% else %}
-                                <span class="badge badge-inactive">Inactive</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-outline-info" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Search and Filter Section -->
+<div class="card-brand mb-6">
+    <div class="p-4">
+        <div class="grid lg:grid-cols-3 gap-4 items-center">
+            <div class="lg:col-span-1">
+                <div class="relative">
+                    <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" 
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" 
+                           id="propertySearch" 
+                           placeholder="Search properties...">
+                </div>
+            </div>
+            <div class="lg:col-span-2">
+                <div class="flex space-x-3 justify-end">
+                    <select class="px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                    <select class="px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" id="typeFilter">
+                        <option value="">All Types</option>
+                        <option value="apartment">Apartment</option>
+                        <option value="house">House</option>
+                        <option value="condo">Condo</option>
+                        <option value="townhouse">Townhouse</option>
+                    </select>
+                    <button class="px-4 py-3 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center" title="Export">
+                        <i class="bi bi-download"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        {% else %}
-        <div class="text-center py-5">
-            <i class="bi bi-building" style="font-size: 4rem; color: var(--medium-gray);"></i>
-            <h4 class="mt-3 text-muted">No Properties Yet</h4>
-            <p class="text-muted">Add your first property to get started with tenant management.</p>
-            <a href="{{ url_for('admin.add_property') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-2"></i>Add First Property
-            </a>
-        </div>
-        {% endif %}
     </div>
 </div>
+
+<!-- Main Table Card -->
+<div class="card-brand">
+        
+    {% if properties %}
+    <!-- Clean Table Design -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Property</th>
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Type</th>
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Details</th>
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Tenant</th>
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                    <th class="text-right py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for property in properties %}
+                <tr class="property-row hover:bg-gray-50 transition-colors">
+                    <!-- Property Info -->
+                    <td class="py-6 px-6">
+                        <div class="flex items-center">
+                            <div class="bg-gray-100 rounded-lg p-2 mr-4">
+                                <i class="bi bi-buildings text-gray-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">{{ property.address }}</div>
+                                <div class="text-sm text-gray-500">ID: #{{ property.id }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <!-- Type -->
+                    <td class="py-6 px-6">
+                        {% set type_colors = {
+                            'apartment': {'bg': 'bg-blue-100', 'text': 'text-blue-800', 'border': 'border-blue-200'},
+                            'house': {'bg': 'bg-green-100', 'text': 'text-green-800', 'border': 'border-green-200'}, 
+                            'condo': {'bg': 'bg-yellow-100', 'text': 'text-yellow-800', 'border': 'border-yellow-200'},
+                            'townhouse': {'bg': 'bg-purple-100', 'text': 'text-purple-800', 'border': 'border-purple-200'}
+                        } %}
+                        {% set colors = type_colors.get(property.property_type.lower(), {'bg': 'bg-gray-100', 'text': 'text-gray-800', 'border': 'border-gray-200'}) %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ colors.bg }} {{ colors.text }} border {{ colors.border }}">
+                            {{ property.property_type.title() }}
+                        </span>
+                    </td>
+                    
+                    <!-- Property Details -->
+                    <td class="py-6 px-6">
+                        <div class="space-y-1">
+                            <div class="flex items-center text-sm text-gray-900">
+                                <i class="bi bi-house text-gray-400 mr-2"></i>
+                                {% if property.bedrooms and property.bathrooms %}
+                                    {{ property.bedrooms }} bed, {{ property.bathrooms }} bath
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="bi bi-arrows-angle-expand text-gray-400 mr-2"></i>
+                                {% if property.square_footage %}
+                                    {{ "{:,}".format(property.square_footage | int) }} sq ft
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </div>
+                            {% if property.rent_amount %}
+                            <div class="flex items-center text-sm font-semibold text-green-600">
+                                <i class="bi bi-currency-dollar text-gray-400 mr-2"></i>
+                                ${{ "{:,.0f}".format(property.rent_amount) }}/month
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    
+                    <!-- Tenant Information -->
+                    <td class="py-6 px-6">
+                        {% if property.current_tenant %}
+                            <div class="flex items-start">
+                                <div class="bg-green-100 rounded-lg p-2 mr-3">
+                                    <i class="bi bi-person-check text-green-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900 text-sm">{{ property.current_tenant.full_name }}</div>
+                                    <div class="text-xs text-green-600">
+                                        <i class="bi bi-check-circle mr-1"></i>
+                                        Occupied
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="flex items-center text-gray-500">
+                                <div class="bg-gray-100 rounded-lg p-2 mr-3">
+                                    <i class="bi bi-house text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500">Vacant</div>
+                                    <div class="text-xs text-yellow-600">Available</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Status -->
+                    <td class="py-6 px-6">
+                        {% if property.is_active %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                <i class="bi bi-check-circle mr-1"></i>Active
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                                <i class="bi bi-x-circle mr-1"></i>Inactive
+                            </span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td class="py-6 px-6 text-right">
+                        <div class="relative inline-block text-left">
+                            <button type="button" class="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 rounded-md transition-colors" onclick="toggleDropdown({{ loop.index }})">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <div id="dropdown-{{ loop.index }}" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                <div class="py-1">
+                                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="bi bi-eye text-primary-600 mr-3"></i>View Details
+                                    </a>
+                                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="bi bi-pencil text-yellow-600 mr-3"></i>Edit Property
+                                    </a>
+                                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="bi bi-file-earmark-text text-blue-600 mr-3"></i>View Lease
+                                    </a>
+                                    <hr class="my-1 border-gray-100">
+                                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
+                                        <i class="bi bi-trash mr-3"></i>Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <!-- Clean Empty State -->
+    <div class="text-center py-12">
+        <div class="mb-6">
+            <div class="w-24 h-24 bg-gray-100 rounded-full mx-auto flex items-center justify-center">
+                <i class="bi bi-buildings text-gray-400 text-4xl"></i>
+            </div>
+        </div>
+        <h4 class="text-xl font-semibold text-gray-900 mb-2">No Properties Yet</h4>
+        <p class="text-gray-500 mb-6 max-w-md mx-auto">
+            Add your first property to start building your rental portfolio and managing tenants.
+        </p>
+        <div class="flex justify-center space-x-3">
+            <a href="{{ url_for('admin.add_property') }}" class="btn-brand-primary flex items-center">
+                <i class="bi bi-plus-circle mr-2"></i>Add First Property
+            </a>
+            <button type="button" class="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors font-medium flex items-center">
+                <i class="bi bi-upload mr-2"></i>Import Properties
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('propertySearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const typeFilter = document.getElementById('typeFilter');
+    const tableRows = document.querySelectorAll('.property-row');
+    let searchTimeout;
+
+    // Enhanced search with debouncing
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const statusValue = statusFilter.value.toLowerCase();
+        const typeValue = typeFilter.value.toLowerCase();
+
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+            // Get text content from each cell
+            const propertyCell = row.cells[0].textContent.toLowerCase();
+            const typeCell = row.cells[1].textContent.toLowerCase();
+            const detailsCell = row.cells[2].textContent.toLowerCase();
+            const tenantCell = row.cells[3].textContent.toLowerCase();
+            const statusCell = row.cells[4].textContent.toLowerCase();
+
+            // Check search matches
+            const matchesSearch = !searchTerm || 
+                propertyCell.includes(searchTerm) || 
+                tenantCell.includes(searchTerm) ||
+                detailsCell.includes(searchTerm);
+
+            // Check status filter
+            const matchesStatus = !statusValue || statusCell.includes(statusValue);
+
+            // Check type filter
+            const matchesType = !typeValue || typeCell.includes(typeValue);
+
+            const shouldShow = matchesSearch && matchesStatus && matchesType;
+            
+            if (shouldShow) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Show/hide "no results" message
+        updateNoResultsMessage(visibleCount);
+    }
+
+    // Add no results message functionality
+    function updateNoResultsMessage(visibleCount) {
+        let noResultsMsg = document.getElementById('noResultsMessage');
+        
+        if (visibleCount === 0 && tableRows.length > 0) {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('tr');
+                noResultsMsg.id = 'noResultsMessage';
+                noResultsMsg.innerHTML = `
+                    <td colspan="6" class="text-center py-8 text-gray-500">
+                        <i class="bi bi-search text-3xl mb-2 block"></i>
+                        <div class="font-medium">No properties found</div>
+                        <div class="text-sm">Try adjusting your search criteria</div>
+                    </td>
+                `;
+                document.querySelector('tbody').appendChild(noResultsMsg);
+            }
+            noResultsMsg.style.display = '';
+        } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+
+    // Debounced search for better performance
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(filterTable, 300);
+    });
+
+    statusFilter.addEventListener('change', filterTable);
+    typeFilter.addEventListener('change', filterTable);
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Focus search on Ctrl/Cmd + F
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+        
+        // Clear search on Escape
+        if (e.key === 'Escape' && document.activeElement === searchInput) {
+            searchInput.value = '';
+            filterTable();
+        }
+    });
+});
+
+// Dropdown toggle function
+function toggleDropdown(index) {
+    // Close all other dropdowns first
+    document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+        if (dropdown.id !== `dropdown-${index}`) {
+            dropdown.classList.add('hidden');
+        }
+    });
+    
+    // Toggle the clicked dropdown
+    const dropdown = document.getElementById(`dropdown-${index}`);
+    dropdown.classList.toggle('hidden');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('[onclick^="toggleDropdown"]') && !event.target.closest('[id^="dropdown-"]')) {
+        document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+            dropdown.classList.add('hidden');
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -99,7 +99,7 @@ def send_message():
         admin = User.query.filter_by(role='admin').first()
         if admin:
             form.recipient_id.choices = [(admin.id, 'Property Manager')]
-            form.property_id.choices = [('', 'General')] + [(active_lease.property.id, active_lease.property.address)]
+            form.property_id.choices = [(0, 'General')] + [(active_lease.property.id, active_lease.property.address)]
         else:
             flash('No property manager available to send message to.', 'error')
             return redirect(url_for('tenant.messages'))
@@ -111,7 +111,7 @@ def send_message():
         message = Message(
             sender_id=current_user.id,
             recipient_id=form.recipient_id.data,
-            property_id=form.property_id.data if form.property_id.data else None,
+            property_id=form.property_id.data if form.property_id.data != 0 else None,
             message_text=form.message_text.data
         )
         db.session.add(message)
@@ -157,3 +157,41 @@ def request_maintenance():
         return redirect(url_for('tenant.maintenance'))
     
     return render_template('tenant/request_maintenance.html', form=form, active_lease=active_lease)
+
+@tenant_bp.route('/documents/<int:document_id>/download')
+@login_required
+@tenant_required
+def download_document(document_id):
+    from flask import send_file
+    document = Document.query.get_or_404(document_id)
+    
+    # Ensure tenant can only access their own lease documents
+    tenant_lease = Lease.query.filter_by(tenant_id=current_user.id, status='active').first()
+    if not tenant_lease or document.lease_id != tenant_lease.id:
+        flash('Access denied. You can only access your own documents.', 'error')
+        return redirect(url_for('tenant.documents'))
+    
+    try:
+        return send_file(document.file_path, as_attachment=True, download_name=document.file_name)
+    except FileNotFoundError:
+        flash('File not found on server.', 'error')
+        return redirect(url_for('tenant.documents'))
+
+@tenant_bp.route('/documents/<int:document_id>/view')
+@login_required
+@tenant_required
+def view_document(document_id):
+    from flask import send_file
+    document = Document.query.get_or_404(document_id)
+    
+    # Ensure tenant can only access their own lease documents
+    tenant_lease = Lease.query.filter_by(tenant_id=current_user.id, status='active').first()
+    if not tenant_lease or document.lease_id != tenant_lease.id:
+        flash('Access denied. You can only access your own documents.', 'error')
+        return redirect(url_for('tenant.documents'))
+    
+    try:
+        return send_file(document.file_path, as_attachment=False)
+    except FileNotFoundError:
+        flash('File not found on server.', 'error')
+        return redirect(url_for('tenant.documents'))

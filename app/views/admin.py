@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from functools import wraps
 from app import db
@@ -162,13 +162,13 @@ def send_message():
     
     # Populate tenant choices
     form.recipient_id.choices = [(u.id, u.full_name) for u in User.query.filter_by(role='tenant', is_active=True).all()]
-    form.property_id.choices = [('', 'None')] + [(p.id, p.address) for p in Property.query.filter_by(owner_id=current_user.id).all()]
+    form.property_id.choices = [(0, 'None')] + [(p.id, p.address) for p in Property.query.filter_by(owner_id=current_user.id).all()]
     
     if form.validate_on_submit():
         message = Message(
             sender_id=current_user.id,
             recipient_id=form.recipient_id.data,
-            property_id=form.property_id.data if form.property_id.data else None,
+            property_id=form.property_id.data if form.property_id.data != 0 else None,
             message_text=form.message_text.data
         )
         db.session.add(message)
@@ -177,6 +177,51 @@ def send_message():
         return redirect(url_for('admin.messages'))
     return render_template('admin/send_message.html', form=form)
 
+@admin_bp.route('/messages/<int:message_id>/read')
+@login_required
+@admin_required
+def mark_message_read(message_id):
+    message = Message.query.get_or_404(message_id)
+    
+    # Only allow recipient to mark as read
+    if message.recipient_id == current_user.id:
+        message.is_read = True
+        db.session.commit()
+        flash('Message marked as read.', 'success')
+    else:
+        flash('You can only mark your own messages as read.', 'error')
+    
+    return redirect(url_for('admin.messages'))
+
+@admin_bp.route('/messages/<int:message_id>/delete')
+@login_required
+@admin_required
+def delete_message(message_id):
+    message = Message.query.get_or_404(message_id)
+    
+    # Only allow sender or recipient to delete
+    if message.sender_id == current_user.id or message.recipient_id == current_user.id:
+        db.session.delete(message)
+        db.session.commit()
+        flash('Message deleted successfully.', 'success')
+    else:
+        flash('You can only delete your own messages.', 'error')
+    
+    return redirect(url_for('admin.messages'))
+
+@admin_bp.route('/messages/mark-all-read')
+@login_required
+@admin_required
+def mark_all_messages_read():
+    messages = Message.query.filter_by(recipient_id=current_user.id, is_read=False).all()
+    
+    for message in messages:
+        message.is_read = True
+    
+    db.session.commit()
+    flash(f'{len(messages)} messages marked as read.', 'success')
+    return redirect(url_for('admin.messages'))
+
 @admin_bp.route('/maintenance')
 @login_required
 @admin_required
@@ -184,19 +229,45 @@ def maintenance():
     requests = MaintenanceRequest.query.order_by(MaintenanceRequest.created_at.desc()).all()
     return render_template('admin/maintenance.html', requests=requests)
 
-@admin_bp.route('/maintenance/<int:request_id>/update', methods=['POST'])
+@admin_bp.route('/maintenance/update', methods=['POST'])
 @login_required
 @admin_required
 def update_maintenance_status():
     request_id = request.form.get('request_id')
     new_status = request.form.get('status')
     
+    if not request_id or not new_status:
+        flash('Missing request ID or status.', 'error')
+        return redirect(url_for('admin.maintenance'))
+    
     maintenance_request = MaintenanceRequest.query.get_or_404(request_id)
     maintenance_request.status = new_status
     db.session.commit()
     
-    flash('Maintenance request status updated!', 'success')
+    flash(f'Maintenance request status updated to {new_status.replace("_", " ").title()}!', 'success')
     return redirect(url_for('admin.maintenance'))
+
+@admin_bp.route('/maintenance/<int:request_id>/delete')
+@login_required
+@admin_required
+def delete_maintenance_request(request_id):
+    maintenance_request = MaintenanceRequest.query.get_or_404(request_id)
+    
+    try:
+        db.session.delete(maintenance_request)
+        db.session.commit()
+        flash('Maintenance request deleted successfully.', 'success')
+    except Exception as e:
+        flash('Error deleting maintenance request.', 'error')
+    
+    return redirect(url_for('admin.maintenance'))
+
+@admin_bp.route('/maintenance/<int:request_id>/view')
+@login_required
+@admin_required
+def view_maintenance_request(request_id):
+    maintenance_request = MaintenanceRequest.query.get_or_404(request_id)
+    return render_template('admin/maintenance_detail.html', request=maintenance_request)
 
 @admin_bp.route('/documents')
 @login_required
@@ -204,3 +275,100 @@ def update_maintenance_status():
 def documents():
     documents = Document.query.all()
     return render_template('admin/documents.html', documents=documents)
+
+@admin_bp.route('/documents/upload', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def upload_document():
+    form = DocumentUploadForm()
+    
+    # Populate lease choices
+    form.lease_id.choices = [(l.id, f"{l.tenant.full_name} - {l.property.address}") for l in Lease.query.all()]
+    
+    if form.validate_on_submit():
+        import os
+        from werkzeug.utils import secure_filename
+        
+        # Get uploaded file
+        file = form.file.data
+        original_filename = secure_filename(file.filename)
+        
+        # Generate unique filename
+        import uuid
+        file_extension = os.path.splitext(original_filename)[1]
+        unique_filename = f"{uuid.uuid4().hex}{file_extension}"
+        
+        # Create uploads directory if it doesn't exist
+        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'documents')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Save file with unique name
+        file_path = os.path.join(upload_dir, unique_filename)
+        file.save(file_path)
+        
+        # Create document record
+        document = Document(
+            lease_id=form.lease_id.data,
+            document_type=form.document_type.data,
+            file_name=original_filename,
+            file_path=file_path,
+            file_size=os.path.getsize(file_path),
+            mime_type=file.mimetype,
+            uploaded_by=current_user.id
+        )
+        
+        db.session.add(document)
+        db.session.commit()
+        
+        flash('Document uploaded successfully!', 'success')
+        return redirect(url_for('admin.documents'))
+    
+    return render_template('admin/upload_document.html', form=form)
+
+@admin_bp.route('/documents/<int:document_id>/download')
+@login_required
+@admin_required
+def download_document(document_id):
+    from flask import send_file
+    document = Document.query.get_or_404(document_id)
+    
+    try:
+        return send_file(document.file_path, as_attachment=True, download_name=document.file_name)
+    except FileNotFoundError:
+        flash('File not found on server.', 'error')
+        return redirect(url_for('admin.documents'))
+
+@admin_bp.route('/documents/<int:document_id>/view')
+@login_required
+@admin_required
+def view_document(document_id):
+    from flask import send_file
+    document = Document.query.get_or_404(document_id)
+    
+    try:
+        return send_file(document.file_path, as_attachment=False)
+    except FileNotFoundError:
+        flash('File not found on server.', 'error')
+        return redirect(url_for('admin.documents'))
+
+@admin_bp.route('/documents/<int:document_id>/delete', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def delete_document(document_id):
+    import os
+    document = Document.query.get_or_404(document_id)
+    
+    try:
+        # Delete physical file
+        if os.path.exists(document.file_path):
+            os.remove(document.file_path)
+        
+        # Delete database record
+        db.session.delete(document)
+        db.session.commit()
+        
+        flash('Document deleted successfully!', 'success')
+    except Exception as e:
+        flash('Error deleting document.', 'error')
+    
+    return redirect(url_for('admin.documents'))

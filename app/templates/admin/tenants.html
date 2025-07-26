@@ -3,90 +3,319 @@
 {% block title %}Tenants - Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2 text-primary">
-        <i class="bi bi-people me-2"></i>Tenants
+<!-- Clean Header Section -->
+<div class="flex flex-wrap justify-between items-center pt-6 pb-4 mb-6 border-b border-gray-200">
+    <h1 class="text-3xl font-semibold text-primary-800 heading flex items-center">
+        <i class="bi bi-people mr-3"></i>Tenants
     </h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('admin.add_tenant') }}" class="btn btn-primary">
-            <i class="bi bi-person-plus me-2"></i>Add Tenant
+    <div class="flex space-x-2">
+        <a href="{{ url_for('admin.add_tenant') }}" class="btn-brand-primary flex items-center">
+            <i class="bi bi-person-plus mr-2"></i>Add Tenant
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        {% if tenants %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Current Property</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for tenant in tenants %}
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="bg-light rounded-circle p-2 me-2">
-                                    <i class="bi bi-person text-primary"></i>
-                                </div>
-                                <strong>{{ tenant.full_name }}</strong>
-                            </div>
-                        </td>
-                        <td>{{ tenant.username }}</td>
-                        <td>{{ tenant.email }}</td>
-                        <td>{{ tenant.phone or '-' }}</td>
-                        <td>
-                            {% set active_lease = tenant.leases | selectattr('status', 'equalto', 'active') | first %}
-                            {% if active_lease %}
-                                {{ active_lease.property.address }}
-                            {% else %}
-                                <span class="text-muted">No active lease</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if tenant.is_active %}
-                                <span class="badge badge-active">Active</span>
-                            {% else %}
-                                <span class="badge badge-inactive">Inactive</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-outline-info" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-warning" title="Send Message">
-                                    <i class="bi bi-chat-dots"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Search and Filter Section -->
+<div class="card-brand mb-6">
+    <div class="p-4">
+        <div class="grid lg:grid-cols-3 gap-4 items-center">
+            <div class="lg:col-span-1">
+                <div class="relative">
+                    <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" 
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" 
+                           id="tenantSearch" 
+                           placeholder="Search by name, email, or username...">
+                </div>
+            </div>
+            <div class="lg:col-span-2">
+                <div class="flex space-x-3 justify-end">
+                    <select class="px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                    <select class="px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" id="leaseFilter">
+                        <option value="">All Leases</option>
+                        <option value="active">With Active Lease</option>
+                        <option value="no-lease">No Active Lease</option>
+                    </select>
+                    <button class="px-4 py-3 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center" title="Export">
+                        <i class="bi bi-download"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        {% else %}
-        <div class="text-center py-5">
-            <i class="bi bi-people" style="font-size: 4rem; color: var(--medium-gray);"></i>
-            <h4 class="mt-3 text-muted">No Tenants Yet</h4>
-            <p class="text-muted">Add your first tenant to start managing leases.</p>
-            <a href="{{ url_for('admin.add_tenant') }}" class="btn btn-primary">
-                <i class="bi bi-person-plus me-2"></i>Add First Tenant
-            </a>
-        </div>
-        {% endif %}
     </div>
 </div>
+
+<!-- Main Table Card -->
+<div class="card-brand">
+    {% if tenants %}
+    <!-- Clean Table Design -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Tenant</th>
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Contact</th>
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Current Property</th>
+                    <th class="text-left py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                    <th class="text-right py-4 px-6 text-sm font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for tenant in tenants %}
+                <tr class="tenant-row hover:bg-gray-50 transition-colors">
+                    <!-- Tenant Info -->
+                    <td class="py-6 px-6">
+                        <div class="flex items-center">
+                            <div class="relative mr-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold text-sm">{{ tenant.full_name[:2].upper() if tenant.full_name else 'TN' }}</span>
+                                </div>
+                                {% if tenant.is_active %}
+                                <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">{{ tenant.full_name }}</div>
+                                <div class="text-sm text-gray-500">@{{ tenant.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <!-- Contact Information -->
+                    <td class="py-6 px-6">
+                        <div class="space-y-1">
+                            <div class="flex items-center text-sm text-gray-900">
+                                <i class="bi bi-envelope text-gray-400 mr-2"></i>
+                                {{ tenant.email }}
+                            </div>
+                            {% if tenant.phone %}
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="bi bi-telephone text-gray-400 mr-2"></i>
+                                {{ tenant.phone }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    
+                    <!-- Property Information -->
+                    <td class="py-6 px-6">
+                        {% set active_lease = tenant.leases | selectattr('status', 'equalto', 'active') | first %}
+                        {% if active_lease %}
+                            <div class="flex items-start">
+                                <div class="bg-green-100 rounded-lg p-2 mr-3">
+                                    <i class="bi bi-house-door text-green-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900 text-sm">{{ active_lease.property.address }}</div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <i class="bi bi-calendar-event mr-1"></i>
+                                        Expires {{ active_lease.end_date.strftime('%b %d, %Y') if active_lease.end_date }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="flex items-center text-gray-500">
+                                <div class="bg-gray-100 rounded-lg p-2 mr-3">
+                                    <i class="bi bi-house-x text-gray-400"></i>
+                                </div>
+                                <span class="text-sm">No active lease</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Status -->
+                    <td class="py-6 px-6">
+                        {% if tenant.is_active %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                <i class="bi bi-check-circle mr-1"></i>Active
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                                <i class="bi bi-x-circle mr-1"></i>Inactive
+                            </span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td class="py-6 px-6 text-right">
+                        <div class="relative inline-block text-left">
+                            <button type="button" class="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 rounded-md transition-colors" onclick="toggleDropdown({{ loop.index }})">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <div id="dropdown-{{ loop.index }}" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                <div class="py-1">
+                                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="bi bi-eye text-primary-600 mr-3"></i>View Details
+                                    </a>
+                                    <a href="{{ url_for('admin.send_message') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="bi bi-chat-dots text-green-600 mr-3"></i>Send Message
+                                    </a>
+                                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="bi bi-pencil text-yellow-600 mr-3"></i>Edit Tenant
+                                    </a>
+                                    <hr class="my-1 border-gray-100">
+                                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
+                                        <i class="bi bi-trash mr-3"></i>Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <!-- Clean Empty State -->
+    <div class="text-center py-12">
+        <div class="mb-6">
+            <div class="w-24 h-24 bg-gray-100 rounded-full mx-auto flex items-center justify-center">
+                <i class="bi bi-people text-gray-400 text-4xl"></i>
+            </div>
+        </div>
+        <h4 class="text-xl font-semibold text-gray-900 mb-2">No Tenants Yet</h4>
+        <p class="text-gray-500 mb-6 max-w-md mx-auto">
+            Start building your tenant community. Add your first tenant to begin managing leases, 
+            tracking payments, and maintaining property relationships.
+        </p>
+        <div class="flex justify-center space-x-3">
+            <a href="{{ url_for('admin.add_tenant') }}" class="btn-brand-primary flex items-center">
+                <i class="bi bi-person-plus mr-2"></i>Add First Tenant
+            </a>
+            <button type="button" class="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors font-medium flex items-center">
+                <i class="bi bi-upload mr-2"></i>Import Tenants
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('tenantSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const leaseFilter = document.getElementById('leaseFilter');
+    const tableRows = document.querySelectorAll('.tenant-row');
+    let searchTimeout;
+
+    // Enhanced search with debouncing
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const statusValue = statusFilter.value.toLowerCase();
+        const leaseValue = leaseFilter.value.toLowerCase();
+
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+            // Get text content from each cell
+            const tenantCell = row.cells[0].textContent.toLowerCase();
+            const contactCell = row.cells[1].textContent.toLowerCase();
+            const propertyCell = row.cells[2].textContent.toLowerCase();
+            const statusCell = row.cells[3].textContent.toLowerCase();
+
+            // Check search matches
+            const matchesSearch = !searchTerm || 
+                tenantCell.includes(searchTerm) || 
+                contactCell.includes(searchTerm);
+
+            // Check status filter
+            const matchesStatus = !statusValue || statusCell.includes(statusValue);
+
+            // Check lease filter
+            const matchesLease = !leaseValue || 
+                (leaseValue === 'active' && !propertyCell.includes('no active lease')) ||
+                (leaseValue === 'no-lease' && propertyCell.includes('no active lease'));
+
+            const shouldShow = matchesSearch && matchesStatus && matchesLease;
+            
+            if (shouldShow) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Show/hide "no results" message
+        updateNoResultsMessage(visibleCount);
+    }
+
+    // Add no results message functionality
+    function updateNoResultsMessage(visibleCount) {
+        let noResultsMsg = document.getElementById('noResultsMessage');
+        
+        if (visibleCount === 0 && tableRows.length > 0) {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('tr');
+                noResultsMsg.id = 'noResultsMessage';
+                noResultsMsg.innerHTML = `
+                    <td colspan="5" class="text-center py-8 text-gray-500">
+                        <i class="bi bi-search text-3xl mb-2 block"></i>
+                        <div class="font-medium">No tenants found</div>
+                        <div class="text-sm">Try adjusting your search criteria</div>
+                    </td>
+                `;
+                document.querySelector('tbody').appendChild(noResultsMsg);
+            }
+            noResultsMsg.style.display = '';
+        } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+
+    // Debounced search for better performance
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(filterTable, 300);
+    });
+
+    statusFilter.addEventListener('change', filterTable);
+    leaseFilter.addEventListener('change', filterTable);
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Focus search on Ctrl/Cmd + F
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+        
+        // Clear search on Escape
+        if (e.key === 'Escape' && document.activeElement === searchInput) {
+            searchInput.value = '';
+            filterTable();
+        }
+    });
+});
+
+// Dropdown toggle function
+function toggleDropdown(index) {
+    // Close all other dropdowns first
+    document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+        if (dropdown.id !== `dropdown-${index}`) {
+            dropdown.classList.add('hidden');
+        }
+    });
+    
+    // Toggle the clicked dropdown
+    const dropdown = document.getElementById(`dropdown-${index}`);
+    dropdown.classList.toggle('hidden');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('[onclick^="toggleDropdown"]') && !event.target.closest('[id^="dropdown-"]')) {
+        document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+            dropdown.classList.add('hidden');
+        });
+    }
+});
+</script>
 {% endblock %}

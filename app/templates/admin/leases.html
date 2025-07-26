@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Leases - Retreat Housing{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap justify-between items-center pt-6 pb-4 mb-6 border-b border-gray-200">
+    <h1 class="text-3xl font-semibold text-primary-800 heading">Manage Leases</h1>
+    <div class="flex space-x-2">
+        <a href="{{ url_for('admin.add_lease') }}" class="btn-brand-primary">
+            <i class="bi bi-plus-circle mr-2"></i>Add New Lease
+        </a>
+        <button type="button" class="px-4 py-2 text-sm text-primary-800 border border-primary-800 rounded-md hover:bg-primary-50 transition-colors">Export</button>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+{% if leases %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="card-brand p-6">
+        <div class="flex items-center">
+            <div class="bg-green-100 rounded-full p-3">
+                <i class="bi bi-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <div class="text-2xl font-semibold text-gray-900">
+                    {{ leases | selectattr("status", "equalto", "active") | list | length }}
+                </div>
+                <div class="text-sm text-gray-500">Active Leases</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-brand p-6">
+        <div class="flex items-center">
+            <div class="bg-yellow-100 rounded-full p-3">
+                <i class="bi bi-clock text-yellow-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <div class="text-2xl font-semibold text-gray-900">
+                    {{ leases | selectattr("status", "equalto", "expired") | list | length }}
+                </div>
+                <div class="text-sm text-gray-500">Expired Leases</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-brand p-6">
+        <div class="flex items-center">
+            <div class="bg-primary-100 rounded-full p-3">
+                <i class="bi bi-currency-dollar text-primary-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <div class="text-2xl font-semibold text-gray-900">
+                    ${{ "%.0f"|format(leases | selectattr("status", "equalto", "active") | map(attribute="monthly_rent") | sum) }}
+                </div>
+                <div class="text-sm text-gray-500">Monthly Revenue</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Leases Table -->
+<div class="card-brand overflow-hidden">
+    {% if leases %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tenant
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Property
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Lease Period
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Monthly Rent
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for lease in leases %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary-100 rounded-full p-2">
+                                        <i class="bi bi-person text-primary-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ lease.tenant.full_name }}</div>
+                                    <div class="text-sm text-gray-500">{{ lease.tenant.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ lease.property.address }}</div>
+                            <div class="text-sm text-gray-500">{{ lease.property.property_type.title() }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ lease.start_date.strftime('%b %d, %Y') }}</div>
+                            <div class="text-sm text-gray-500">to {{ lease.end_date.strftime('%b %d, %Y') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${{ "%.2f"|format(lease.monthly_rent) }}</div>
+                            {% if lease.security_deposit %}
+                            <div class="text-sm text-gray-500">Deposit: ${{ "%.2f"|format(lease.security_deposit) }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if lease.status == 'active' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                    <i class="bi bi-check-circle mr-1"></i>Active
+                                </span>
+                            {% elif lease.status == 'expired' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                    <i class="bi bi-x-circle mr-1"></i>Expired
+                                </span>
+                            {% elif lease.status == 'terminated' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                                    <i class="bi bi-dash-circle mr-1"></i>Terminated
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button class="text-primary-600 hover:text-primary-900 transition-colors" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="text-yellow-600 hover:text-yellow-900 transition-colors" title="Edit Lease">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                {% if lease.status == 'active' %}
+                                <button class="text-red-600 hover:text-red-900 transition-colors" title="Terminate Lease">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <div class="bg-gray-100 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <i class="bi bi-file-earmark-text text-gray-400 text-3xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No leases found</h3>
+            <p class="text-gray-500 mb-6">Get started by creating your first lease agreement.</p>
+            <a href="{{ url_for('admin.add_lease') }}" class="btn-brand-primary">
+                <i class="bi bi-plus-circle mr-2"></i>Add New Lease
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

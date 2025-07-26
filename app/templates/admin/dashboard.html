@@ -3,168 +3,157 @@
 {% block title %}Admin Dashboard - Retreat Housing{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2 text-primary">Dashboard</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
-            <button type="button" class="btn btn-sm btn-outline-primary">Reports</button>
-        </div>
+<div class="flex flex-wrap justify-between items-center pt-6 pb-4 mb-6 border-b border-gray-200">
+    <h1 class="text-3xl font-semibold text-primary-800 heading">Dashboard</h1>
+    <div class="flex space-x-2">
+        <!--button type="button" class="px-4 py-2 text-sm text-primary-800 border border-primary-800 rounded-md hover:bg-primary-50 transition-colors">Export</button>
+        <button type="button" class="px-4 py-2 text-sm text-primary-800 border border-primary-800 rounded-md hover:bg-primary-50 transition-colors">Reports</button-->
     </div>
 </div>
 
 <!-- Stats Cards -->
-<div class="row mb-4">
-    <div class="col-xl-2 col-md-6">
-        <div class="card dashboard-card stats-card">
-            <div class="card-body">
-                <div class="number text-primary">{{ stats.total_properties }}</div>
-                <div class="label">Properties</div>
-            </div>
-        </div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+    <div class="card-brand stats-card">
+        <div class="stats-number text-primary-800">{{ stats.total_properties }}</div>
+        <div class="stats-label">Properties</div>
     </div>
-    <div class="col-xl-2 col-md-6">
-        <div class="card dashboard-card stats-card">
-            <div class="card-body">
-                <div class="number text-success">{{ stats.total_tenants }}</div>
-                <div class="label">Active Tenants</div>
-            </div>
-        </div>
+    <div class="card-brand stats-card">
+        <div class="stats-number text-green-600">{{ stats.total_tenants }}</div>
+        <div class="stats-label">Active Tenants</div>
     </div>
-    <div class="col-xl-2 col-md-6">
-        <div class="card dashboard-card stats-card">
-            <div class="card-body">
-                <div class="number text-info">{{ stats.active_leases }}</div>
-                <div class="label">Active Leases</div>
-            </div>
-        </div>
+    <div class="card-brand stats-card">
+        <div class="stats-number text-blue-600">{{ stats.active_leases }}</div>
+        <div class="stats-label">Active Leases</div>
     </div>
-    <div class="col-xl-2 col-md-6">
-        <div class="card dashboard-card stats-card">
-            <div class="card-body">
-                <div class="number text-warning">{{ stats.pending_maintenance }}</div>
-                <div class="label">Pending Requests</div>
-            </div>
-        </div>
+    <div class="card-brand stats-card">
+        <div class="stats-number text-yellow-600">{{ stats.pending_maintenance }}</div>
+        <div class="stats-label">Pending Requests</div>
     </div>
-    <div class="col-xl-2 col-md-6">
-        <div class="card dashboard-card stats-card">
-            <div class="card-body">
-                <div class="number text-secondary">{{ stats.unread_messages }}</div>
-                <div class="label">Unread Messages</div>
-            </div>
-        </div>
+    <div class="card-brand stats-card">
+        <div class="stats-number text-gray-600">{{ stats.unread_messages }}</div>
+        <div class="stats-label">Unread Messages</div>
     </div>
 </div>
 
 <!-- Quick Actions -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title text-primary">
-                    <i class="bi bi-lightning-charge me-2"></i>Quick Actions
-                </h5>
-                <div class="row">
-                    <div class="col-md-2 mb-2">
-                        <a href="{{ url_for('admin.add_property') }}" class="btn btn-primary btn-sm w-100">
-                            <i class="bi bi-plus-circle me-1"></i>Add Property
-                        </a>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <a href="{{ url_for('admin.add_tenant') }}" class="btn btn-success btn-sm w-100">
-                            <i class="bi bi-person-plus me-1"></i>Add Tenant
-                        </a>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <a href="{{ url_for('admin.add_lease') }}" class="btn btn-info btn-sm w-100">
-                            <i class="bi bi-file-plus me-1"></i>New Lease
-                        </a>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <a href="{{ url_for('admin.send_message') }}" class="btn btn-warning btn-sm w-100">
-                            <i class="bi bi-chat-dots me-1"></i>Send Message
-                        </a>
-                    </div>
-                </div>
-            </div>
+<div class="mb-8">
+    <div class="card-brand p-6">
+        <h5 class="text-xl font-semibold text-primary-800 mb-4 flex items-center">
+            <i class="bi bi-lightning-charge mr-3"></i>Quick Actions
+        </h5>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <a href="{{ url_for('admin.add_property') }}" class="btn-brand-primary text-center py-3">
+                <i class="bi bi-plus-circle mr-2"></i>Add Property
+            </a>
+            <a href="{{ url_for('admin.add_tenant') }}" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-md transition-colors text-center">
+                <i class="bi bi-person-plus mr-2"></i>Add Tenant
+            </a>
+            <a href="{{ url_for('admin.add_lease') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md transition-colors text-center">
+                <i class="bi bi-file-plus mr-2"></i>New Lease
+            </a>
+            <a href="{{ url_for('admin.send_message') }}" class="bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-3 px-6 rounded-md transition-colors text-center">
+                <i class="bi bi-chat-dots mr-2"></i>Send Message
+            </a>
         </div>
     </div>
 </div>
 
 <!-- Recent Activity -->
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-chat-dots me-2"></i>Recent Messages
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if recent_messages %}
+<div class="grid md:grid-cols-2 gap-6">
+    <div class="card-brand overflow-hidden">
+        <div class="bg-primary-800 text-white px-6 py-4">
+            <h5 class="text-lg font-semibold flex items-center mb-0">
+                <i class="bi bi-chat-dots mr-3"></i>Recent Messages
+            </h5>
+        </div>
+        <div class="p-6">
+            {% if recent_messages %}
+                <div class="space-y-4">
                     {% for message in recent_messages %}
-                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                        <div class="flex-shrink-0">
-                            <div class="bg-light rounded-circle p-2">
-                                <i class="bi bi-person text-primary"></i>
+                    <div class="group hover:bg-gray-50 rounded-lg p-4 transition-colors">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary-100 rounded-full p-2.5">
+                                    <i class="bi bi-chat-dots text-primary-600 text-sm"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">{{ message.sent_at.strftime('%Y-%m-%d %H:%M') }}</div>
-                            <div class="fw-bold">{{ message.sender.full_name }}</div>
-                            <div class="text-truncate">{{ message.message_text[:100] }}...</div>
-                        </div>
-                        <div class="flex-shrink-0">
-                            {% if not message.is_read %}
-                            <span class="badge bg-primary">New</span>
-                            {% endif %}
+                            <div class="flex-grow ml-4 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h6 class="font-medium text-gray-900 truncate">{{ message.sender.full_name }}</h6>
+                                    {% if not message.is_read %}
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-primary-100 text-primary-800 rounded-full">New</span>
+                                    {% endif %}
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2 line-clamp-2">{{ message.message_text[:120] }}{% if message.message_text|length > 120 %}...{% endif %}</p>
+                                <div class="flex items-center text-xs text-gray-500">
+                                    <i class="bi bi-clock mr-1"></i>
+                                    <time>{{ message.sent_at.strftime('%b %d, %Y at %I:%M %p') }}</time>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
-                {% else %}
-                    <p class="text-muted text-center py-3">No recent messages</p>
-                {% endif %}
-                <div class="text-center">
-                    <a href="{{ url_for('admin.messages') }}" class="btn btn-outline-primary btn-sm">View All Messages</a>
                 </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <i class="bi bi-chat-dots text-gray-300 text-3xl mb-3"></i>
+                    <p class="text-gray-500">No recent messages</p>
+                </div>
+            {% endif %}
+            <div class="text-center mt-4">
+                <a href="{{ url_for('admin.messages') }}" class="px-4 py-2 text-sm text-primary-800 border border-primary-800 rounded-md hover:bg-primary-50 transition-colors">View All Messages</a>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0">
-                    <i class="bi bi-tools me-2"></i>Recent Maintenance Requests
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if recent_maintenance %}
+    <div class="card-brand overflow-hidden">
+        <div class="bg-yellow-600 text-gray-900 px-6 py-4">
+            <h5 class="text-lg font-semibold flex items-center mb-0">
+                <i class="bi bi-tools mr-3"></i>Recent Maintenance Requests
+            </h5>
+        </div>
+        <div class="p-6">
+            {% if recent_maintenance %}
+                <div class="space-y-4">
                     {% for request in recent_maintenance %}
-                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                        <div class="flex-shrink-0">
-                            <div class="bg-light rounded-circle p-2">
-                                <i class="bi bi-tools text-warning"></i>
+                    <div class="group hover:bg-gray-50 rounded-lg p-4 transition-colors border border-gray-100">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="bg-yellow-100 rounded-full p-2.5">
+                                    <i class="bi bi-tools text-yellow-600 text-sm"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
-                            <div class="fw-bold">{{ request.title }}</div>
-                            <div class="text-truncate">{{ request.tenant.full_name }} - {{ request.property.address }}</div>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <span class="badge badge-{{ request.priority }}">{{ request.priority.title() }}</span>
-                            <span class="badge badge-{{ request.status }}">{{ request.status.replace('_', ' ').title() }}</span>
+                            <div class="flex-grow ml-4 min-w-0">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div class="min-w-0 flex-grow">
+                                        <h6 class="font-medium text-gray-900 truncate">{{ request.title }}</h6>
+                                        <p class="text-sm text-gray-600">{{ request.tenant.full_name }}</p>
+                                        <p class="text-xs text-gray-500 truncate">{{ request.property.address }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0 ml-4">
+                                        <div class="flex flex-col items-end space-y-1">
+                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full badge-{{ request.priority }}">{{ request.priority.title() }}</span>
+                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full badge-{{ request.status }}">{{ request.status.replace('_', ' ').title() }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center text-xs text-gray-500">
+                                    <i class="bi bi-calendar mr-1"></i>
+                                    <time>{{ request.created_at.strftime('%b %d, %Y at %I:%M %p') }}</time>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
-                {% else %}
-                    <p class="text-muted text-center py-3">No recent maintenance requests</p>
-                {% endif %}
-                <div class="text-center">
-                    <a href="{{ url_for('admin.maintenance') }}" class="btn btn-outline-warning btn-sm">View All Requests</a>
                 </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <i class="bi bi-tools text-gray-300 text-3xl mb-3"></i>
+                    <p class="text-gray-500">No recent maintenance requests</p>
+                </div>
+            {% endif %}
+            <div class="text-center mt-4">
+                <a href="{{ url_for('admin.maintenance') }}" class="px-4 py-2 text-sm text-yellow-700 border border-yellow-600 rounded-md hover:bg-yellow-50 transition-colors">View All Requests</a>
             </div>
         </div>
     </div>

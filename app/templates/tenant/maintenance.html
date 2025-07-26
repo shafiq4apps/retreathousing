@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}My Maintenance Requests - Retreat Housing{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap justify-between items-center pt-6 pb-4 mb-6 border-b border-gray-200">
+    <h1 class="text-3xl font-semibold text-primary-800 heading">My Maintenance Requests</h1>
+    <div class="flex space-x-2">
+        <select id="statusFilter" class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onchange="filterRequests()">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+        </select>
+        <a href="{{ url_for('tenant.request_maintenance') }}" class="btn-brand-primary">
+            <i class="bi bi-plus-circle mr-2"></i>New Request
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+{% if requests %}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="card-brand p-6">
+        <div class="flex items-center">
+            <div class="bg-yellow-100 rounded-full p-3">
+                <i class="bi bi-clock text-yellow-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <div class="text-2xl font-semibold text-gray-900">
+                    {{ requests | selectattr("status", "equalto", "pending") | list | length }}
+                </div>
+                <div class="text-sm text-gray-500">Pending</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-brand p-6">
+        <div class="flex items-center">
+            <div class="bg-blue-100 rounded-full p-3">
+                <i class="bi bi-gear text-blue-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <div class="text-2xl font-semibold text-gray-900">
+                    {{ requests | selectattr("status", "equalto", "in_progress") | list | length }}
+                </div>
+                <div class="text-sm text-gray-500">In Progress</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-brand p-6">
+        <div class="flex items-center">
+            <div class="bg-green-100 rounded-full p-3">
+                <i class="bi bi-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <div class="text-2xl font-semibold text-gray-900">
+                    {{ requests | selectattr("status", "equalto", "completed") | list | length }}
+                </div>
+                <div class="text-sm text-gray-500">Completed</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-brand p-6">
+        <div class="flex items-center">
+            <div class="bg-red-100 rounded-full p-3">
+                <i class="bi bi-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <div class="text-2xl font-semibold text-gray-900">
+                    {{ requests | selectattr("priority", "equalto", "urgent") | list | length }}
+                </div>
+                <div class="text-sm text-gray-500">Urgent</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Maintenance Requests -->
+<div class="card-brand overflow-hidden">
+    {% if requests %}
+        <div class="divide-y divide-gray-200">
+            {% for maintenance_request in requests %}
+            <div class="p-6 hover:bg-gray-50 transition-colors maintenance-item" 
+                 data-status="{{ maintenance_request.status }}" 
+                 data-priority="{{ maintenance_request.priority }}">
+                
+                <div class="flex items-start justify-between">
+                    <!-- Request Info -->
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <h3 class="text-lg font-medium text-gray-900">{{ maintenance_request.title }}</h3>
+                            
+                            <!-- Status Badge -->
+                            {% if maintenance_request.status == 'pending' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                    <i class="bi bi-clock mr-1"></i>Pending
+                                </span>
+                            {% elif maintenance_request.status == 'in_progress' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                    <i class="bi bi-gear mr-1"></i>In Progress
+                                </span>
+                            {% elif maintenance_request.status == 'completed' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                    <i class="bi bi-check-circle mr-1"></i>Completed
+                                </span>
+                            {% elif maintenance_request.status == 'cancelled' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                                    <i class="bi bi-x-circle mr-1"></i>Cancelled
+                                </span>
+                            {% endif %}
+                            
+                            <!-- Priority Badge -->
+                            {% if maintenance_request.priority == 'urgent' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                    <i class="bi bi-exclamation-triangle mr-1"></i>Urgent
+                                </span>
+                            {% elif maintenance_request.priority == 'high' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+                                    <i class="bi bi-arrow-up mr-1"></i>High
+                                </span>
+                            {% elif maintenance_request.priority == 'medium' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                    <i class="bi bi-dash mr-1"></i>Medium
+                                </span>
+                            {% elif maintenance_request.priority == 'low' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                                    <i class="bi bi-arrow-down mr-1"></i>Low
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Property Info -->
+                        <div class="flex items-center text-sm text-gray-600 mb-3">
+                            <i class="bi bi-house mr-1"></i>
+                            <span>{{ maintenance_request.property.address }}</span>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="text-gray-700 mb-4">
+                            <p class="line-clamp-3">{{ maintenance_request.description }}</p>
+                        </div>
+                        
+                        <!-- Timestamps -->
+                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                            <div class="flex items-center">
+                                <i class="bi bi-calendar mr-1"></i>
+                                <span>Submitted: {{ maintenance_request.created_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+                            </div>
+                            {% if maintenance_request.updated_at != maintenance_request.created_at %}
+                            <div class="flex items-center">
+                                <i class="bi bi-arrow-clockwise mr-1"></i>
+                                <span>Updated: {{ maintenance_request.updated_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex flex-col space-y-2 ml-4">
+                        <button onclick="viewRequestDetails({{ maintenance_request.id }})" class="px-3 py-1 text-xs font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-md hover:bg-primary-100 transition-colors">
+                            <i class="bi bi-eye mr-1"></i>View Details
+                        </button>
+                        {% if maintenance_request.status == 'pending' %}
+                        <button onclick="editRequest({{ maintenance_request.id }})" class="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
+                            <i class="bi bi-pencil mr-1"></i>Edit
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <div class="bg-gray-100 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <i class="bi bi-tools text-gray-400 text-3xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No maintenance requests</h3>
+            <p class="text-gray-500 mb-6">You haven't submitted any maintenance requests yet.</p>
+            <a href="{{ url_for('tenant.request_maintenance') }}" class="btn-brand-primary">
+                <i class="bi bi-plus-circle mr-2"></i>Submit Your First Request
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Request Details Modal -->
+<div id="requestModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Request Details</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div id="modalContent">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Information Section -->
+<div class="card-brand p-6 mt-8 bg-blue-50 border border-blue-200">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="bi bi-info-circle text-blue-600 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Maintenance Request Information</h3>
+            <div class="mt-2 text-sm text-blue-700">
+                <p>Track the status of your maintenance requests:</p>
+                <ul class="list-disc list-inside mt-2 space-y-1">
+                    <li><strong>Pending:</strong> Your request has been submitted and is awaiting review</li>
+                    <li><strong>In Progress:</strong> Maintenance team is working on your request</li>
+                    <li><strong>Completed:</strong> Your maintenance request has been resolved</li>
+                    <li><strong>Cancelled:</strong> The request was cancelled (you'll be notified why)</li>
+                </ul>
+                <p class="mt-3">
+                    <strong>Response Times:</strong> Urgent requests are typically addressed within 24 hours, while routine maintenance may take 3-5 business days.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter requests by status
+function filterRequests() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const requests = document.querySelectorAll('.maintenance-item');
+    
+    requests.forEach(request => {
+        const status = request.dataset.status;
+        
+        if (statusFilter === '' || status === statusFilter) {
+            request.style.display = '';
+        } else {
+            request.style.display = 'none';
+        }
+    });
+}
+
+// View request details in modal
+function viewRequestDetails(requestId) {
+    // In a real implementation, you would fetch the details via AJAX
+    document.getElementById('requestModal').classList.remove('hidden');
+    
+    // For now, show basic info from the page
+    const requestElement = document.querySelector(`[data-request-id="${requestId}"]`);
+    document.getElementById('modalContent').innerHTML = `
+        <div class="space-y-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-2">Request Details</h4>
+                <p class="text-gray-700">Full request details would be loaded here via AJAX in a real implementation.</p>
+            </div>
+            <div class="flex justify-end">
+                <button onclick="closeModal()" class="px-4 py-2 text-sm bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Edit request (placeholder)
+function editRequest(requestId) {
+    window.location.href = `{{ url_for('tenant.request_maintenance') }}?edit=${requestId}`;
+}
+
+// Close modal
+function closeModal() {
+    document.getElementById('requestModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('requestModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+
+// Auto-refresh every 30 seconds to check for status updates
+setInterval(function() {
+    fetch(window.location.href, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }).then(response => {
+        if (response.ok) {
+            // Could implement status update notifications here
+        }
+    }).catch(error => {
+        console.log('Error checking for updates:', error);
+    });
+}, 30000);
+
+// Add line clamp CSS for description truncation
+const style = document.createElement('style');
+style.textContent = `
+    .line-clamp-3 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

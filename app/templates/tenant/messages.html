@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - Retreat Housing{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap justify-between items-center pt-6 pb-4 mb-6 border-b border-gray-200">
+    <h1 class="text-3xl font-semibold text-primary-800 heading">Messages</h1>
+    <div class="flex space-x-2">
+        <a href="{{ url_for('tenant.send_message') }}" class="btn-brand-primary">
+            <i class="bi bi-plus-circle mr-2"></i>Send Message
+        </a>
+    </div>
+</div>
+
+<!-- Messages List -->
+{% if messages %}
+    <div class="space-y-4">
+        {% for message in messages %}
+            <div class="card-brand p-6 {% if message.recipient_id == current_user.id and not message.is_read %}border-l-4 border-l-primary-500 bg-primary-25{% endif %}">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <!-- Message Header -->
+                        <div class="flex items-center space-x-4 mb-3">
+                            <div class="flex items-center space-x-2">
+                                {% if message.sender_id == current_user.id %}
+                                    <i class="bi bi-arrow-up-right text-blue-600"></i>
+                                    <span class="text-sm font-medium text-gray-900">To: {{ message.recipient.full_name }}</span>
+                                {% else %}
+                                    <i class="bi bi-arrow-down-left text-green-600"></i>
+                                    <span class="text-sm font-medium text-gray-900">From: {{ message.sender.full_name }}</span>
+                                {% endif %}
+                                
+                                {% if message.recipient_id == current_user.id and not message.is_read %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                                        <i class="bi bi-circle-fill mr-1" style="font-size: 6px;"></i>
+                                        New
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="text-sm text-gray-500">
+                                {{ message.sent_at.strftime('%b %d, %Y at %I:%M %p') }}
+                            </div>
+                        </div>
+                        
+                        <!-- Property Tag (if applicable) -->
+                        {% if message.property %}
+                            <div class="mb-3">
+                                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                                    <i class="bi bi-house mr-1"></i>
+                                    {{ message.property.address }}
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Message Content -->
+                        <div class="prose prose-sm max-w-none">
+                            <div class="whitespace-pre-wrap text-gray-700">{{ message.message_text }}</div>
+                        </div>
+                        
+                        <!-- Attachment (if applicable) -->
+                        {% if message.attachment_url %}
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <a href="{{ message.attachment_url }}" target="_blank" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800">
+                                    <i class="bi bi-paperclip mr-1"></i>
+                                    View Attachment
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination would go here if needed -->
+    
+{% else %}
+    <!-- Empty State -->
+    <div class="text-center py-12">
+        <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <i class="bi bi-chat-dots text-gray-400 text-3xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No messages yet</h3>
+        <div class="text-gray-500 mb-6 max-w-sm mx-auto">
+            You haven't received any messages from your property manager yet. Send your first message to get started!
+        </div>
+        <a href="{{ url_for('tenant.send_message') }}" class="btn-brand-primary">
+            <i class="bi bi-plus-circle mr-2"></i>Send Your First Message
+        </a>
+    </div>
+{% endif %}
+
+<!-- Help Section -->
+<div class="card-brand p-6 mt-8 bg-blue-50 border border-blue-200">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="bi bi-info-circle text-blue-600 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">About Messages</h3>
+            <div class="mt-2 text-sm text-blue-700">
+                <p>Use this messaging system to communicate with your property manager about:</p>
+                <ul class="list-disc list-inside mt-2 space-y-1">
+                    <li>Maintenance requests and issues</li>
+                    <li>Rent payment questions</li>
+                    <li>Lease-related inquiries</li>
+                    <li>General property concerns</li>
+                    <li>Noise complaints or neighbor issues</li>
+                </ul>
+                <p class="mt-2">Messages are automatically marked as read when you view them.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh messages every 30 seconds to check for new messages
+setInterval(function() {
+    // Check if there are new messages without reloading
+    fetch(window.location.href, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }).then(response => {
+        if (response.ok) {
+            // Optionally update unread count or show notification
+            // This is a simple implementation - could be enhanced with WebSocket
+        }
+    }).catch(error => {
+        console.log('Error checking for new messages:', error);
+    });
+}, 30000);
+
+// Mark new messages indicator as less prominent after a few seconds
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const newBadges = document.querySelectorAll('.bg-primary-100');
+        newBadges.forEach(badge => {
+            badge.classList.add('opacity-75');
+        });
+    }, 5000);
+});
+</script>
+{% endblock %}
